@@ -32,6 +32,10 @@ ipcMain.on('ipc-example', async (event, arg) => {
   event.reply('ipc-example', msgTemplate('pong'));
 });
 
+ipcMain.on('minimize-window', async () => {
+  mainWindow?.minimize();
+});
+
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
@@ -106,31 +110,6 @@ const createWindow = async () => {
     event.preventDefault();
     shell.openExternal(url);
   });
-
-  // const devtools = new BrowserWindow();
-  // mainWindow.webContents.setDevToolsWebContents(devtools.webContents);
-  // mainWindow.webContents.openDevTools({ mode: 'detach' });
-  // mainWindow.webContents.once('did-finish-load', () => {
-  //   if (mainWindow) {
-  //     const windowBounds = mainWindow.getBounds();
-  //     devtools.setPosition(windowBounds.x + windowBounds.width, windowBounds.y);
-  //     devtools.setSize(windowBounds.width / 2, windowBounds.height);
-  //   }
-  // });
-  // mainWindow.on('move', () => {
-  //   if (mainWindow) {
-  //     const windowBounds = mainWindow.getBounds();
-  //     devtools.setPosition(windowBounds.x + windowBounds.width, windowBounds.y);
-  //   }
-  // });
-  //
-  // mainWindow.on('close', () => {
-  //   devtools.close();
-  // });
-  //
-  // mainWindow.on('focus', () => {
-  //   devtools.focus();
-  // });
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line

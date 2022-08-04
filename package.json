@@ -215,5 +215,10 @@
       }
     ],
     "singleQuote": true
+  },
+  "browser": {
+    "fs": false,
+    "path": false,
+    "os": false
   }
 }
