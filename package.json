@@ -97,12 +97,14 @@
     }
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.2",
     "axios": "^0.27.2",
     "electron-debug": "^3.2.0",
     "electron-log": "^4.4.7",
     "electron-updater": "^5.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-icons": "^4.4.0",
     "react-router-dom": "^6.3.0"
   },
   "devDependencies": {

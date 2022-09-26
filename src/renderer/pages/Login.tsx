@@ -30,7 +30,7 @@ export default function Login() {
   return (
     <div className="flex h-screen ml-auto w-[440px] bg-gray-800 shadow-2xl shadow-black">
       <div className="pt-[200px] w-80 h-full mx-auto text-center">
-        <div className="logo" />
+        <div className="logo h-[85px] mb-8" />
         {errorMessage ? (
           <div className="alert alert-danger">{errorMessage}</div>
         ) : null}
@@ -47,7 +47,7 @@ export default function Login() {
           </div>
           <div className="form-input">
             <a
-              href="https://shatteredrealmsonline.com/forgot"
+              href="https://shatteredrealmsonline.com/"
               target="_blank"
               rel="noreferrer"
               className="float-right text-xs text-gray-400 hover:text-gray-300"

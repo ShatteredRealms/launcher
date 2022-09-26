@@ -19,10 +19,10 @@ const DefaultTemplate = (props: TemplateProps) => {
   return (
     <div>
       <header className="w-full absolute top-0 right-0 z-10 flex items-center justify-end">
-        {/* eslint-disable-next-line react/button-has-type */}
         <button
           onClick={minimizeApp}
           className="hover:bg-white/10 w-[30px] h-[30px] pl-[10px]"
+          type="button"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -39,10 +39,10 @@ const DefaultTemplate = (props: TemplateProps) => {
             />
           </svg>
         </button>
-        {/* eslint-disable-next-line react/button-has-type */}
         <button
           onClick={closeApp}
-          className="hover:bg-white/10 w-[30px] h-[30px] pl-[10px]"
+          className="hover:bg-red-700 w-[30px] h-[30px] pl-[10px]"
+          type="button"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
