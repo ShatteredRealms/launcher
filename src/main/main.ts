@@ -12,7 +12,6 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
 class AppUpdater {
@@ -29,6 +28,18 @@ ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
   event.reply('ipc-example', msgTemplate('pong'));
+});
+
+ipcMain.on('minimize-window', async () => {
+  mainWindow?.minimize();
+});
+
+ipcMain.on('navigate', async (_event, arg) => {
+  mainWindow?.loadURL(resolveHtmlPath(`${arg}`));
+});
+
+ipcMain.on('accounts-api-url', async (event) => {
+  event.reply('accounts-api-url', process.env.ACCOUNTS_API);
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -71,14 +82,17 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 1280,
+    height: 720,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
+    fullscreenable: false,
+    resizable: false,
+    frame: false,
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
@@ -97,9 +111,6 @@ const createWindow = async () => {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
-
-  const menuBuilder = new MenuBuilder(mainWindow);
-  menuBuilder.buildMenu();
 
   // Open urls in the user's browser
   mainWindow.webContents.setWindowOpenHandler((edata) => {
