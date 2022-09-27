@@ -243,7 +243,7 @@
     ],
     "publish": {
       "provider": "github",
-      "owner": "ShatteredRealmsOnline",
+      "owner": "ShatteredRealms",
       "repo": "Launcher"
     }
   },
