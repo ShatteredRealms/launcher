@@ -17,7 +17,7 @@ const DefaultTemplate = (props: TemplateProps) => {
   const { children } = props;
 
   return (
-    <div>
+    <>
       <header className="w-full absolute top-0 right-0 z-10 flex items-center justify-end">
         <button
           onClick={minimizeApp}
@@ -61,7 +61,7 @@ const DefaultTemplate = (props: TemplateProps) => {
         </button>
       </header>
       {children}
-    </div>
+    </>
   );
 };
 
