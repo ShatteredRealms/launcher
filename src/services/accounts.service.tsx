@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-let ACCOUNTS_API = '';
+let ACCOUNTS_API = process.env.ACCOUNTS_API || '';
 
 window.electron.ipcRenderer.on('accounts-api-url', (resp) => {
   if (typeof resp === 'string') {
