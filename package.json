@@ -105,6 +105,7 @@
     "electron-dl": "^3.3.1",
     "electron-log": "^4.4.7",
     "electron-updater": "^5.0.3",
+    "env-cmd": "^10.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
@@ -245,9 +246,6 @@
       "owner": "ShatteredRealmsOnline",
       "repo": "Launcher"
     }
-  },
-  "collective": {
-    "url": "https://opencollective.com/electron-react-boilerplate-594"
   },
   "devEngines": {
     "node": ">=14.x",
