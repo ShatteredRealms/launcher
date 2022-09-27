@@ -42,10 +42,8 @@ let lastSize = 0;
 
 const installDirectory =
   process.env.NODE_ENV === 'production'
-    ? app.getAppPath()
+    ? `${path.dirname(app.getPath('exe'))}/game`
     : `${app.getAppPath()}/game`;
-
-const AccountsApiUrl = process.env.ACCOUNTS_API || '';
 
 // ipcMain.on('ipc-example', async (event, arg) => {
 //   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
@@ -88,7 +86,7 @@ ipcMain.on('launch-client', async () => {
 });
 
 ipcMain.on('download', async (event) => {
-  currentDownload = download(mainWindow, WindowsClientURL, {
+  download(mainWindow, WindowsClientURL, {
     directory: installDirectory,
     onStarted: (item: DownloadItem) => {
       currentDownload = item;
@@ -100,8 +98,6 @@ ipcMain.on('download', async (event) => {
       const ms = new Date().getTime() - lastTime;
       lastTime = new Date().getTime();
 
-      console.log('ms', ms);
-      console.log('bytes', bytes);
       let speed = bytes / ms;
       let units = 'KB/s';
 
@@ -247,6 +243,3 @@ app
     });
   })
   .catch(console.log);
-
-// eslint-disable-next-line import/prefer-default-export
-export { AccountsApiUrl };
