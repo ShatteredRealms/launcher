@@ -1,5 +1,5 @@
 import './Home.css';
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { RiAccountCircleFill } from 'react-icons/ri';
 import { Menu, Transition } from '@headlessui/react';
 import { useNavigate } from 'react-router-dom';
@@ -9,24 +9,64 @@ function classNames(...classes: string[]) {
 }
 
 export default function Home() {
+  const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0.0);
   const [dlSpeed, setDlSpeed] = useState(0.0);
+  const [dlUnits, setDLUnits] = useState('KB/s');
   const [downloading, setDownloading] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(true);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.electron.ipcRenderer.sendMessage('game-status', []);
+
+    window.electron.ipcRenderer.on('installed', () => {
+      setIsInstalled(true);
+    });
+
+    window.electron.ipcRenderer.once('game-status', (installed) => {
+      setIsInstalled(!!installed);
+      setLoading(false);
+    });
+
+    window.electron.ipcRenderer.once('download', () => {
+      setDownloading(false);
+    });
+
+    window.electron.ipcRenderer.on('download-progress', (p: unknown) => {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      setProgress(Math.floor(p.percent * 100));
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      setDlSpeed(Math.round(p.speed * 10) / 10);
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      setDLUnits(p.units);
+    });
+  }, []);
 
   const onSignOut = () => {
     navigate('/');
   };
 
   const onInstall = () => {
+    setIsInstalled(false);
     setDownloading(true);
     setProgress(0.0);
     setDlSpeed(0.0);
+    console.log('renderer call download');
+    window.electron.ipcRenderer.sendMessage('download', []);
   };
 
   const onCancelDownload = () => {
+    window.electron.ipcRenderer.sendMessage('download-cancel', []);
     setDownloading(false);
+  };
+
+  const onPlay = () => {
+    window.electron.ipcRenderer.sendMessage('launch-client', []);
   };
 
   return (
@@ -97,34 +137,82 @@ export default function Home() {
             >
               <div
                 className="h-full bg-blue-500 rounded-l"
-                style={{ width: progress }}
+                style={{ width: `${progress}%` }}
               />
             </div>
             <div className="flex w-1/4 h-full bg-gray-800">
-              {downloading ? (
-                <div className="flex w-full h-full items-center">
-                  <div className="w-10/12 text-4xl text-center text-gray-300">
-                    {progress}%
-                    <p className="text-xs text-gray-500">
-                      Downloading - {dlSpeed} MB/s
-                    </p>
-                  </div>
-                  <button
-                    className="w-2/12 h-full text-center bg-red-900 hover:bg-red-800"
-                    onClick={onCancelDownload}
-                    type="button"
-                  >
-                    X
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={onInstall}
-                  type="button"
-                  className="w-full text-5xl text-blue-300 hover:bg-gray-900"
+              {loading ? (
+                <svg
+                  className="animate-spin p-5 h-full w-full text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
                 >
-                  Install
-                </button>
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              ) : (
+                <>
+                  {isInstalled ? (
+                    <button
+                      onClick={onPlay}
+                      type="button"
+                      className="w-full text-5xl text-blue-300 hover:bg-gray-900"
+                    >
+                      Play
+                    </button>
+                  ) : (
+                    <>
+                      {downloading ? (
+                        <div className="flex w-full h-full items-center">
+                          <div className="w-10/12 text-4xl text-center text-gray-300">
+                            {progress}%
+                            <p className="text-xs text-gray-500">
+                              Downloading - {dlSpeed} {dlUnits}
+                            </p>
+                          </div>
+                          <button
+                            className="w-2/12 h-full text-center bg-red-900 hover:bg-red-800"
+                            onClick={onCancelDownload}
+                            type="button"
+                          >
+                            X
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          {progress < 100 ? (
+                            <button
+                              onClick={onInstall}
+                              type="button"
+                              className="w-full text-5xl text-blue-300 hover:bg-gray-900"
+                            >
+                              Install
+                            </button>
+                          ) : (
+                            <button
+                              className="w-full h-full text-5xl text-gray-300 cursor-default"
+                              type="button"
+                            >
+                              Installing
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </>
+                  )}
+                </>
               )}
             </div>
           </div>

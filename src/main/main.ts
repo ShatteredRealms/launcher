@@ -12,7 +12,19 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import { Progress } from 'electron-dl';
 import { resolveHtmlPath } from './util';
+import DownloadItem = Electron.DownloadItem;
+
+const { download } = require('electron-dl');
+
+const WindowsClientURL =
+  'https://downloads.shatteredrealmsonline.com/client/WindowsClient.zip';
+
+const AdmZip = require('adm-zip');
+const fs = require('fs');
+
+const child = require('child_process').execFile;
 
 class AppUpdater {
   constructor() {
@@ -23,6 +35,15 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
+
+let currentDownload: DownloadItem | null = null;
+let lastTime = 0;
+let lastSize = 0;
+
+const installDirectory =
+  process.env.NODE_ENV === 'production'
+    ? app.getAppPath()
+    : `${app.getAppPath()}/game`;
 
 // ipcMain.on('ipc-example', async (event, arg) => {
 //   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
@@ -40,6 +61,82 @@ ipcMain.on('navigate', async (_event, arg) => {
 
 ipcMain.on('accounts-api-url', async (event) => {
   event.reply('accounts-api-url', process.env.ACCOUNTS_API);
+});
+
+ipcMain.on('game-status', async (event) => {
+  fs.access(`${installDirectory}/SRO`, (err: never) => {
+    if (err) {
+      // Game isn't installed
+      event.reply('game-status', false);
+    } else {
+      event.reply('game-status', true);
+    }
+  });
+});
+
+ipcMain.on('launch-client', async () => {
+  child(`${installDirectory}/SROClient.exe`, (err: never) => {
+    if (!err) {
+      app.quit();
+      return;
+    }
+
+    console.log(err);
+  });
+});
+
+ipcMain.on('download', async (event) => {
+  currentDownload = download(mainWindow, WindowsClientURL, {
+    directory: installDirectory,
+    onStarted: (item: DownloadItem) => {
+      currentDownload = item;
+    },
+    onProgress: (progress: Progress) => {
+      const bytes = progress.transferredBytes - lastSize;
+      lastSize = progress.transferredBytes;
+
+      const ms = new Date().getTime() - lastTime;
+      lastTime = new Date().getTime();
+
+      console.log('ms', ms);
+      console.log('bytes', bytes);
+      let speed = bytes / ms;
+      let units = 'KB/s';
+
+      if (speed > 1000) {
+        speed /= 1000;
+        units = 'MB/s';
+      }
+
+      if (Number.isNaN(speed)) {
+        speed = 0;
+      }
+
+      event.reply('download-progress', { ...progress, speed, units });
+    },
+    onCompleted: (file: File) => {
+      event.reply('download', 'download completed');
+      const zip = new AdmZip(file.path);
+      zip.extractAllToAsync(installDirectory, true, true, () => {
+        event.reply('installed', 'installation complete');
+      });
+      if (fs.existsSync(file.path)) {
+        fs.unlink(file.path, () => {});
+      }
+    },
+    onCancel: (item: DownloadItem) => {
+      console.log('canceled: ', JSON.stringify(item));
+    },
+  });
+});
+
+ipcMain.on('download-cancel', async () => {
+  if (currentDownload) {
+    currentDownload.cancel();
+    if (fs.existsSync(currentDownload.getSavePath())) {
+      fs.unlink(currentDownload.getSavePath(), () => {});
+    }
+  }
 });
 
 if (process.env.NODE_ENV === 'production') {

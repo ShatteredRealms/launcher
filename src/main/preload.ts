@@ -4,7 +4,12 @@ export type Channels =
   | 'ipc-example'
   | 'accounts-api-url'
   | 'minimize-window'
-  | 'navigate';
+  | 'navigate'
+  | 'game-status'
+  | 'download'
+  | 'download-progress'
+  | 'download-cancel'
+  | 'launch-client';
 
 contextBridge.exposeInMainWorld('electron', {
   ipcRenderer: {

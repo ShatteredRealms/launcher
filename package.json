@@ -29,6 +29,7 @@
     "postinstall": "ts-node .erb/scripts/check-native-dep.js && electron-builder install-app-deps && cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.renderer.dev.dll.ts",
     "lint": "cross-env NODE_ENV=development eslint . --ext .js,.jsx,.ts,.tsx",
     "package": "ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish never",
+    "publish": "ts-node ./.erb/scripts/clean.js dist && npm run build && electron-builder build --publish always",
     "prepare": "cd .. && husky install launcher/.husky && cd launcher",
     "rebuild": "electron-rebuild --parallel --types prod,dev,optional --module-dir release/app",
     "start": "ts-node ./.erb/scripts/check-port-in-use.js && env-cmd -f .env.localhost npm run start:renderer",
@@ -98,14 +99,17 @@
   },
   "dependencies": {
     "@headlessui/react": "^1.7.2",
+    "adm-zip": "^0.5.9",
     "axios": "^0.27.2",
     "electron-debug": "^3.2.0",
+    "electron-dl": "^3.3.1",
     "electron-log": "^4.4.7",
     "electron-updater": "^5.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^4.4.0",
-    "react-router-dom": "^6.3.0"
+    "react-router-dom": "^6.3.0",
+    "request": "^2.88.2"
   },
   "devDependencies": {
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.6",
@@ -179,8 +183,8 @@
     "webpack-merge": "^5.8.0"
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "ShatteredRealmsOnlineLauncher",
+    "appId": "com.shatteredrealmsonline.Launcher",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
@@ -238,8 +242,8 @@
     ],
     "publish": {
       "provider": "github",
-      "owner": "electron-react-boilerplate",
-      "repo": "electron-react-boilerplate"
+      "owner": "ShatteredRealmsOnline",
+      "repo": "Launcher"
     }
   },
   "collective": {

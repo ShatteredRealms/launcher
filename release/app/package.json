@@ -1,12 +1,11 @@
 {
-  "name": "electron-react-boilerplate",
-  "version": "4.6.0",
-  "description": "A foundation for scalable desktop apps",
-  "license": "MIT",
+  "name": "shattered-realms-online-launcher",
+  "version": "0.0.1",
+  "description": "Launcher for Shattered Realms Online",
   "author": {
-    "name": "Electron React Boilerplate Maintainers",
-    "email": "electronreactboilerplate@gmail.com",
-    "url": "https://github.com/electron-react-boilerplate"
+    "name": "Shattered Realms Online Developers",
+    "email": "wil@forever.dev",
+    "url": "https://forever.dev"
   },
   "main": "./dist/main/main.js",
   "scripts": {
