@@ -45,6 +45,8 @@ const installDirectory =
     ? app.getAppPath()
     : `${app.getAppPath()}/game`;
 
+const AccountsApiUrl = process.env.ACCOUNTS_API || '';
+
 // ipcMain.on('ipc-example', async (event, arg) => {
 //   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
 //   console.log(msgTemplate(arg));
@@ -192,6 +194,8 @@ const createWindow = async () => {
     frame: false,
   });
 
+  mainWindow.setTitle('Shattered Realms Online Launcher');
+
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
   mainWindow.on('ready-to-show', () => {
@@ -243,3 +247,6 @@ app
     });
   })
   .catch(console.log);
+
+// eslint-disable-next-line import/prefer-default-export
+export { AccountsApiUrl };
