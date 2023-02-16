@@ -4,7 +4,7 @@
   "description": "Launcher for Shattered Realms Online",
   "author": {
     "name": "Shattered Realms Online Developers",
-    "email": "wil@forever.dev",
+    "username": "wil@forever.dev",
     "url": "https://forever.dev"
   },
   "main": "./dist/main/main.js",

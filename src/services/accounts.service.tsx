@@ -13,8 +13,8 @@ window.electron.ipcRenderer.on('accounts-api-url', (resp) => {
 window.electron.ipcRenderer.sendMessage('accounts-api-url', []);
 
 const AccountsService = {
-  login: (email: string, password: string) => {
-    return axios.post(`${ACCOUNTS_API}/v1/login`, { email, password });
+  login: (username: string, password: string) => {
+    return axios.post(`${ACCOUNTS_API}/v1/login`, { username, password });
   },
 };
 

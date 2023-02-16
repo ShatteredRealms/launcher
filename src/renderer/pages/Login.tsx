@@ -4,7 +4,7 @@ import AccountsService from '../../services/accounts.service';
 import './Login.css';
 
 export default function Login() {
-  const [email, setEmail] = React.useState('');
+  const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [errorMessage, setErrorMessage] = React.useState('');
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ export default function Login() {
   function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setErrorMessage('');
-    AccountsService.login(email, password)
+    AccountsService.login(username, password)
       .then(() => {
         // return window.electron.ipcRenderer.sendMessage('navigate', ['/home']);
         // eslint-disable-next-line react/prop-types
@@ -37,11 +37,11 @@ export default function Login() {
         <form onSubmit={handleSubmit}>
           <div className="form-input">
             <input
-              type="email"
-              placeholder="Email"
-              name="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              type="username"
+              placeholder="Username"
+              name="username"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
               required
             />
           </div>

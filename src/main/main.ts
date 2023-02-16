@@ -20,6 +20,8 @@ const { download } = require('electron-dl');
 
 const WindowsClientURL =
   'https://downloads.shatteredrealmsonline.com/client/WindowsClient.zip';
+const LatestVersionUrl =
+  'https://downloads.shatteredrealmsonline.com/client/ClientVersion.txt';
 
 const AdmZip = require('adm-zip');
 const fs = require('fs');
@@ -40,16 +42,21 @@ let currentDownload: DownloadItem | null = null;
 let lastTime = 0;
 let lastSize = 0;
 
-const installDirectory =
+const baseDirectory =
   process.env.NODE_ENV === 'production'
-    ? `${path.dirname(app.getPath('exe'))}/game`
-    : `${app.getAppPath()}/game`;
+    ? `${path.dirname(app.getPath('exe'))}`
+    : `${app.getAppPath()}`;
+
+const gameDirectory = `${baseDirectory}/game`;
+const clientVersionFilePath = `${gameDirectory}/version.txt`;
 
 // ipcMain.on('ipc-example', async (event, arg) => {
 //   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
 //   console.log(msgTemplate(arg));
 //   event.reply('ipc-example', msgTemplate('pong'));
 // });
+
+ipcMain.on('game-client-updates', async (event) => {});
 
 ipcMain.on('minimize-window', async () => {
   mainWindow?.minimize();
@@ -64,18 +71,64 @@ ipcMain.on('accounts-api-url', async (event) => {
 });
 
 ipcMain.on('game-status', async (event) => {
-  fs.access(`${installDirectory}/SRO`, (err: never) => {
-    if (err) {
-      // Game isn't installed
-      event.reply('game-status', false);
-    } else {
-      event.reply('game-status', true);
-    }
+  fs.access(`${gameDirectory}/SRO`, (err: never) => {
+    download(mainWindow, LatestVersionUrl, {
+      directory: baseDirectory,
+      onCompleted: (latestVersionFile: File) => {
+        if (err) {
+          // Game isn't installed
+          event.reply('game-status', false);
+          fs.rename(latestVersionFile.path, clientVersionFilePath, () => {});
+        } else {
+          // Game installed, check current version
+          fs.readFile(
+            clientVersionFilePath,
+            'utf-8',
+            (readFileErr: any, data: string) => {
+              if (readFileErr) {
+                // Game is installed but old version
+                fs.rename(latestVersionFile.path, clientVersionFilePath, () => {
+                  event.reply('game-status', false);
+                });
+              } else {
+                // Game is installed and has a version. Check the version.
+                latestVersionFile
+                  .text()
+                  .then((currentVersion) => {
+                    if (currentVersion === data) {
+                      // Latest version
+                      event.reply('game-status', true);
+                    } else {
+                      // Old version detected
+                      // 1. Delete current version file
+                      // 2. Rename downloaded version file to client version file
+                      // 3. Repspond to download latest version
+                      fs.unlink(clientVersionFilePath, () => {
+                        fs.rename(
+                          latestVersionFile.path,
+                          clientVersionFilePath,
+                          () => {}
+                        );
+                        event.reply('game-status', false);
+                      });
+                    }
+                  })
+                  .catch(() => {});
+              }
+            }
+          );
+        }
+      },
+      onCancel: (item: DownloadItem) => {
+        console.log('canceled checking version: ', JSON.stringify(item));
+        event.reply('game-status', true);
+      },
+    });
   });
 });
 
 ipcMain.on('launch-client', async () => {
-  child(`${installDirectory}/SROClient.exe`, (err: never) => {
+  child(`${gameDirectory}/SROClient.exe`, (err: never) => {
     if (!err) {
       app.quit();
       return;
@@ -87,7 +140,7 @@ ipcMain.on('launch-client', async () => {
 
 ipcMain.on('download', async (event) => {
   download(mainWindow, WindowsClientURL, {
-    directory: installDirectory,
+    directory: gameDirectory,
     onStarted: (item: DownloadItem) => {
       currentDownload = item;
     },
@@ -115,7 +168,7 @@ ipcMain.on('download', async (event) => {
     onCompleted: (file: File) => {
       event.reply('download', 'download completed');
       const zip = new AdmZip(file.path);
-      zip.extractAllToAsync(installDirectory, true, true, () => {
+      zip.extractAllToAsync(gameDirectory, true, true, () => {
         event.reply('installed', 'installation complete');
       });
       if (fs.existsSync(file.path)) {

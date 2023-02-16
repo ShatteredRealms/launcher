@@ -16,7 +16,7 @@
   },
   "author": {
     "name": "Forever Dev",
-    "email": "contact@forever.dev",
+    "username": "contact@forever.dev",
     "url": "https://forever.dev"
   },
   "main": "./src/main/main.ts",

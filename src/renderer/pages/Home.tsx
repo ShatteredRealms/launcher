@@ -56,7 +56,6 @@ export default function Home() {
     setDownloading(true);
     setProgress(0.0);
     setDlSpeed(0.0);
-    console.log('renderer call download');
     window.electron.ipcRenderer.sendMessage('download', []);
   };
 
