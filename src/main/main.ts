@@ -17,6 +17,7 @@ import { resolveHtmlPath } from './util';
 import DownloadItem = Electron.DownloadItem;
 
 const { download } = require('electron-dl');
+
 const WindowsClientURL =
   'https://downloads.shatteredrealmsonline.com/client/WindowsClient.zip';
 const LatestVersionUrl =
@@ -45,7 +46,8 @@ const baseDirectory =
     ? `${path.dirname(app.getPath('exe'))}`
     : `${app.getAppPath()}`;
 
-const gameDirectory = `${baseDirectory}/game`; const clientVersionFilePath = `${gameDirectory}/version.txt`;
+const gameDirectory = `${baseDirectory}/game`;
+const clientVersionFilePath = `${gameDirectory}/version.txt`;
 
 // ipcMain.on('ipc-example', async (event, arg) => {
 //   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
@@ -53,7 +55,7 @@ const gameDirectory = `${baseDirectory}/game`; const clientVersionFilePath = `${
 //   event.reply('ipc-example', msgTemplate('pong'));
 // });
 
-ipcMain.on('game-client-updates', async () => { });
+ipcMain.on('game-client-updates', async () => {});
 
 ipcMain.on('minimize-window', async () => {
   mainWindow?.minimize();
@@ -75,7 +77,7 @@ ipcMain.on('game-status', async (event) => {
         if (err) {
           // Game isn't installed
           event.reply('game-status', false);
-          fs.rename(latestVersionFile.path, clientVersionFilePath, () => { });
+          fs.rename(latestVersionFile.path, clientVersionFilePath, () => {});
         } else {
           // Game installed, check current version
           fs.readFile(
@@ -104,13 +106,13 @@ ipcMain.on('game-status', async (event) => {
                         fs.rename(
                           latestVersionFile.path,
                           clientVersionFilePath,
-                          () => { }
+                          () => {}
                         );
                         event.reply('game-status', false);
                       });
                     }
                   })
-                  .catch(() => { });
+                  .catch(() => {});
               }
             }
           );
@@ -169,7 +171,7 @@ ipcMain.on('download', async (event) => {
         event.reply('installed', 'installation complete');
       });
       if (fs.existsSync(file.path)) {
-        fs.unlink(file.path, () => { });
+        fs.unlink(file.path, () => {});
       }
     },
     onCancel: (item: DownloadItem) => {
@@ -182,7 +184,7 @@ ipcMain.on('download-cancel', async () => {
   if (currentDownload) {
     currentDownload.cancel();
     if (fs.existsSync(currentDownload.getSavePath())) {
-      fs.unlink(currentDownload.getSavePath(), () => { });
+      fs.unlink(currentDownload.getSavePath(), () => {});
     }
   }
 });
@@ -265,11 +267,11 @@ const createWindow = async () => {
     return { action: 'deny' };
   });
 
-  const { session: { webRequest } } = mainWindow.webContents;
+  const {
+    session: { webRequest },
+  } = mainWindow.webContents;
   const filter = {
-    urls: [
-      'http://localhost/keycloak-redirect*'
-    ]
+    urls: ['http://localhost/keycloak-redirect*'],
   };
   webRequest.onBeforeRequest(filter, async ({ url }) => {
     const params = url.slice(url.indexOf('#'));

@@ -4,7 +4,7 @@ import DefaultTemplate from './templates/default';
 import Home from './pages/Home';
 import { init } from 'services/keycloak';
 
-init()
+init();
 
 export default function App() {
   return (
