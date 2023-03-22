@@ -11,13 +11,12 @@ jobs:
     # config in package.json > "build" and remove the conditional below
     #    if: ${{ github.repository_owner == 'electron-react-boilerplate' }}
 
-#     runs-on: ${{ matrix.os }}
-    runs-on: self-hosted
+    runs-on: ${{ matrix.os }}
 
-#     strategy:
-#       matrix:
+    strategy:
+      matrix:
 #         #        os: [macos-latest, ubuntu-latest, windows-latest]
-#         os: [windows-latest]
+        os: [windows-latest]
 
     steps:
       - name: Checkout git repo
