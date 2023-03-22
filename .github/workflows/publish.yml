@@ -45,6 +45,8 @@ jobs:
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
           CSC_IDENTITY_AUTO_DISCOVERY: false
         run: |
+          unset CSC_LINK
+          unset CSC_KEY_PASSWORD
           npm run postinstall
           npm run build
           # npm exec electron-builder -- --publish always --win --mac --linux
