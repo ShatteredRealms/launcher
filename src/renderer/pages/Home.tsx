@@ -2,8 +2,7 @@ import './Home.css';
 import { Fragment, useEffect, useState } from 'react';
 import { RiAccountCircleFill } from 'react-icons/ri';
 import { Menu, Transition } from '@headlessui/react';
-import { useNavigate } from 'react-router-dom';
-import { keycloak } from 'renderer/App';
+import { keycloak } from 'services/keycloak';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -16,8 +15,6 @@ export default function Home() {
   const [dlUnits, setDLUnits] = useState('KB/s');
   const [downloading, setDownloading] = useState(false);
   const [isInstalled, setIsInstalled] = useState(true);
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     window.electron.ipcRenderer.sendMessage('game-status', []);

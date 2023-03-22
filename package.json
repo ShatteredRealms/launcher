@@ -95,7 +95,15 @@
     ],
     "transform": {
       "\\.(ts|tsx|js|jsx)$": "ts-jest"
-    }
+    },
+    "modulePaths": [
+      "<rootDir>",
+      "<rootDir>/src"
+    ],
+    "roots": [
+      "<rootDir>",
+      "<rootDir>/src"
+    ]
   },
   "dependencies": {
     "@headlessui/react": "^1.7.2",
