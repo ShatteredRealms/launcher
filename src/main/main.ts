@@ -15,6 +15,8 @@ import log from 'electron-log';
 import { Progress } from 'electron-dl';
 import { resolveHtmlPath } from './util';
 import DownloadItem = Electron.DownloadItem;
+import { createAuthWindow, keycloak } from './auth';
+
 
 const { download } = require('electron-dl');
 
@@ -47,8 +49,7 @@ const baseDirectory =
     ? `${path.dirname(app.getPath('exe'))}`
     : `${app.getAppPath()}`;
 
-const gameDirectory = `${baseDirectory}/game`;
-const clientVersionFilePath = `${gameDirectory}/version.txt`;
+const gameDirectory = `${baseDirectory}/game`; const clientVersionFilePath = `${gameDirectory}/version.txt`;
 
 // ipcMain.on('ipc-example', async (event, arg) => {
 //   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
@@ -56,7 +57,7 @@ const clientVersionFilePath = `${gameDirectory}/version.txt`;
 //   event.reply('ipc-example', msgTemplate('pong'));
 // });
 
-ipcMain.on('game-client-updates', async (event) => {});
+ipcMain.on('game-client-updates', async (event) => { });
 
 ipcMain.on('minimize-window', async () => {
   mainWindow?.minimize();
@@ -78,7 +79,7 @@ ipcMain.on('game-status', async (event) => {
         if (err) {
           // Game isn't installed
           event.reply('game-status', false);
-          fs.rename(latestVersionFile.path, clientVersionFilePath, () => {});
+          fs.rename(latestVersionFile.path, clientVersionFilePath, () => { });
         } else {
           // Game installed, check current version
           fs.readFile(
@@ -107,13 +108,13 @@ ipcMain.on('game-status', async (event) => {
                         fs.rename(
                           latestVersionFile.path,
                           clientVersionFilePath,
-                          () => {}
+                          () => { }
                         );
                         event.reply('game-status', false);
                       });
                     }
                   })
-                  .catch(() => {});
+                  .catch(() => { });
               }
             }
           );
@@ -172,7 +173,7 @@ ipcMain.on('download', async (event) => {
         event.reply('installed', 'installation complete');
       });
       if (fs.existsSync(file.path)) {
-        fs.unlink(file.path, () => {});
+        fs.unlink(file.path, () => { });
       }
     },
     onCancel: (item: DownloadItem) => {
@@ -185,7 +186,7 @@ ipcMain.on('download-cancel', async () => {
   if (currentDownload) {
     currentDownload.cancel();
     if (fs.existsSync(currentDownload.getSavePath())) {
-      fs.unlink(currentDownload.getSavePath(), () => {});
+      fs.unlink(currentDownload.getSavePath(), () => { });
     }
   }
 });
@@ -268,6 +269,18 @@ const createWindow = async () => {
     return { action: 'deny' };
   });
 
+  const { session: { webRequest } } = mainWindow.webContents;
+  const filter = {
+    urls: [
+      'http://localhost/keycloak-redirect*'
+    ]
+  };
+  webRequest.onBeforeRequest(filter, async ({ url }) => {
+    const params = url.slice(url.indexOf('#'));
+    console.log('params:', params);
+    mainWindow!.loadURL(`${resolveHtmlPath('index.html')}/${params}`);
+  });
+
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
   new AppUpdater();
@@ -289,6 +302,7 @@ app
   .whenReady()
   .then(() => {
     createWindow();
+
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.

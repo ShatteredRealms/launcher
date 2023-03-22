@@ -3,6 +3,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { RiAccountCircleFill } from 'react-icons/ri';
 import { Menu, Transition } from '@headlessui/react';
 import { useNavigate } from 'react-router-dom';
+import { keycloak } from 'renderer/App';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -48,7 +49,7 @@ export default function Home() {
   }, []);
 
   const onSignOut = () => {
-    navigate('/');
+    keycloak.logout();
   };
 
   const onInstall = () => {
@@ -95,17 +96,16 @@ export default function Home() {
             <div className="py-1">
               <Menu.Item>
                 {({ active }) => (
-                  <a
-                    href="https://shatteredrealmsonline.com/"
-                    rel="noreferrer"
-                    target="_blank"
+                  <button
+                    type="button"
                     className={classNames(
                       active ? 'bg-gray-900 text-gray-100' : 'text-gray-400',
-                      'block px-4 py-2 text-sm'
+                      'block w-full px-4 py-2 text-sm'
                     )}
+                    onClick={keycloak.accountManagement}
                   >
                     Profile
-                  </a>
+                  </button>
                 )}
               </Menu.Item>
               <Menu.Item>
