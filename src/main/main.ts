@@ -15,11 +15,8 @@ import log from 'electron-log';
 import { Progress } from 'electron-dl';
 import { resolveHtmlPath } from './util';
 import DownloadItem = Electron.DownloadItem;
-import { createAuthWindow, keycloak } from './auth';
-
 
 const { download } = require('electron-dl');
-
 const WindowsClientURL =
   'https://downloads.shatteredrealmsonline.com/client/WindowsClient.zip';
 const LatestVersionUrl =
@@ -27,7 +24,6 @@ const LatestVersionUrl =
 
 const AdmZip = require('adm-zip');
 const fs = require('fs');
-
 const child = require('child_process').execFile;
 
 class AppUpdater {
@@ -57,7 +53,7 @@ const gameDirectory = `${baseDirectory}/game`; const clientVersionFilePath = `${
 //   event.reply('ipc-example', msgTemplate('pong'));
 // });
 
-ipcMain.on('game-client-updates', async (event) => { });
+ipcMain.on('game-client-updates', async () => { });
 
 ipcMain.on('minimize-window', async () => {
   mainWindow?.minimize();
