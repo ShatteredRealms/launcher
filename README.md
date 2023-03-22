@@ -1,4 +1,4 @@
-![Shattered Realms Online](https://github.com/shatteredrealms/documentation/assets/images/logo/WhiteLogo.png)
+![Shattered Realms Online](https://github.com/ShatteredRealms/Documentation/raw/main/assets/images/logo/WhiteLogo.png)
 
 # Overview
 
