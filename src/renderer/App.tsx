@@ -9,11 +9,11 @@ init();
 export default function App() {
   return (
     <DefaultTemplate>
-      <Router>
-        <Routes>
+    <Router>
+      <Routes>
           <Route path="/" element={<Home />} />
-        </Routes>
-      </Router>
+      </Routes>
+    </Router>
     </DefaultTemplate>
   );
 }

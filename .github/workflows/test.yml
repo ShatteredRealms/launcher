@@ -4,19 +4,18 @@ on: [push, pull_request]
 
 jobs:
   test:
-#     runs-on: ${{ matrix.os }}
-    runs-on: self-hosted
+    runs-on: ${{ matrix.os }}
 
-#     strategy:
-#       matrix:
-#         os: [macos-latest, windows-latest, ubuntu-latest]
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, self-hosted]
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       - name: Install Node.js and NPM
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: 16
           cache: npm
