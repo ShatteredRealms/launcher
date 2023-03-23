@@ -48,14 +48,9 @@ const baseDirectory =
 
 const gameDirectory = `${baseDirectory}/game`;
 const clientVersionFilePath = `${gameDirectory}/version.txt`;
+let latestVersionFile: File | null;
 
-// ipcMain.on('ipc-example', async (event, arg) => {
-//   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-//   console.log(msgTemplate(arg));
-//   event.reply('ipc-example', msgTemplate('pong'));
-// });
-
-ipcMain.on('game-client-updates', async () => {});
+ipcMain.on('game-client-updates', async () => { });
 
 ipcMain.on('minimize-window', async () => {
   mainWindow?.minimize();
@@ -70,54 +65,47 @@ ipcMain.on('accounts-api-url', async (event) => {
 });
 
 ipcMain.on('game-status', async (event) => {
-  fs.access(`${gameDirectory}/SRO`, (err: never) => {
+  fs.access(`${gameDirectory}`, (err: never) => {
     download(mainWindow, LatestVersionUrl, {
-      directory: baseDirectory,
-      onCompleted: (latestVersionFile: File) => {
+      directory: gameDirectory,
+
+      onCompleted: (file: File) => {
+        latestVersionFile = file;
         if (err) {
           // Game isn't installed
           event.reply('game-status', false);
-          fs.rename(latestVersionFile.path, clientVersionFilePath, () => {});
-        } else {
-          // Game installed, check current version
-          fs.readFile(
-            clientVersionFilePath,
-            'utf-8',
-            (readFileErr: any, data: string) => {
-              if (readFileErr) {
-                // Game is installed but old version
-                fs.rename(latestVersionFile.path, clientVersionFilePath, () => {
-                  event.reply('game-status', false);
-                });
-              } else {
-                // Game is installed and has a version. Check the version.
-                latestVersionFile
-                  .text()
-                  .then((currentVersion) => {
-                    if (currentVersion === data) {
-                      // Latest version
-                      event.reply('game-status', true);
-                    } else {
-                      // Old version detected
-                      // 1. Delete current version file
-                      // 2. Rename downloaded version file to client version file
-                      // 3. Repspond to download latest version
-                      fs.unlink(clientVersionFilePath, () => {
-                        fs.rename(
-                          latestVersionFile.path,
-                          clientVersionFilePath,
-                          () => {}
-                        );
-                        event.reply('game-status', false);
-                      });
-                    }
-                  })
-                  .catch(() => {});
-              }
-            }
-          );
+          return;
         }
+
+        // Game installed, check current version
+        fs.readFile(
+          clientVersionFilePath,
+          'utf-8',
+          (readFileErr: any, currentVersion: string) => {
+            if (readFileErr) {
+              // File doesn't exist so redownload.
+              event.reply('game-status', false);
+              return;
+            }
+
+            console.log('currentVersion:', currentVersion);
+
+            // Game is installed and has a version. Check the version.
+            fs.readFile(
+              latestVersionFile!.path,
+              'utf-8',
+              (readFileErr: any, latestVersion: string) => {
+                if (readFileErr) {
+                  console.log('fatal error:', readFileErr);
+                  return;
+                }
+
+                event.reply('game-status', currentVersion === latestVersion);
+              });
+          }
+        );
       },
+
       onCancel: (item: DownloadItem) => {
         console.log('canceled checking version: ', JSON.stringify(item));
         event.reply('game-status', true);
@@ -140,9 +128,11 @@ ipcMain.on('launch-client', async () => {
 ipcMain.on('download', async (event) => {
   download(mainWindow, WindowsClientURL, {
     directory: gameDirectory,
+
     onStarted: (item: DownloadItem) => {
       currentDownload = item;
     },
+
     onProgress: (progress: Progress) => {
       const bytes = progress.transferredBytes - lastSize;
       lastSize = progress.transferredBytes;
@@ -164,6 +154,7 @@ ipcMain.on('download', async (event) => {
 
       event.reply('download-progress', { ...progress, speed, units });
     },
+
     onCompleted: (file: File) => {
       event.reply('download', 'download completed');
       const zip = new AdmZip(file.path);
@@ -171,9 +162,17 @@ ipcMain.on('download', async (event) => {
         event.reply('installed', 'installation complete');
       });
       if (fs.existsSync(file.path)) {
-        fs.unlink(file.path, () => {});
+        fs.unlink(file.path, () => { });
+      }
+      if (latestVersionFile) {
+        fs.rename(latestVersionFile.path, clientVersionFilePath, (err: any) => {
+          if (err) {
+            console.log('error', err);
+          }
+        });
       }
     },
+
     onCancel: (item: DownloadItem) => {
       console.log('canceled: ', JSON.stringify(item));
     },
@@ -184,7 +183,7 @@ ipcMain.on('download-cancel', async () => {
   if (currentDownload) {
     currentDownload.cancel();
     if (fs.existsSync(currentDownload.getSavePath())) {
-      fs.unlink(currentDownload.getSavePath(), () => {});
+      fs.unlink(currentDownload.getSavePath(), () => { });
     }
   }
 });
