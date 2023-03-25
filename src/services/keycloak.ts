@@ -1,6 +1,8 @@
 import Keycloak from 'keycloak-js';
 
-export let keycloak = new Keycloak({
+let initialized = false;
+
+export const keycloak = new Keycloak({
   url:
     process.env.NODE_ENV === 'production'
       ? 'https://sso.shatteredrealmsonline.com'
@@ -10,6 +12,8 @@ export let keycloak = new Keycloak({
 });
 
 export const init = () => {
+  if (initialized) return;
+  initialized = true;
   keycloak
     .init({
       checkLoginIframe: false,
@@ -17,21 +21,24 @@ export const init = () => {
     })
     .then(
       (authenticated) => {
-        if (!authenticated) {
-          keycloak
-            .login()
-            .then(
-              (resp: any) => {
-                console.log('resp:', resp);
-              },
-              (error: any) => {
-                console.log('login failed:', error);
-              }
-            )
-            .catch((error: any) => {
-              console.log('login error:', error);
-            });
+        // eslint-disable-next-line promise/always-return
+        if (authenticated) {
+          return;
         }
+        keycloak
+          .login()
+          .then(
+            // eslint-disable-next-line promise/always-return
+            (resp: any) => {
+              console.log('resp:', resp);
+            },
+            (error: any) => {
+              console.log('login failed:', error);
+            }
+          )
+          .catch((error: any) => {
+            console.log('login error:', error);
+          });
       },
       (error) => {
         console.log('init failed:', error);
