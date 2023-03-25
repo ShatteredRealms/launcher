@@ -2,14 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
 body {
   color: white;
   font-family: 'Roboto', sans-serif;
   overflow: hidden;
+  height: 100%;
+  width: 100%;
 }
 
 .logo {
   background-image: url('/assets/imgs/WhiteLogo.png');
   background-size: cover;
   background-repeat: no-repeat;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
 }

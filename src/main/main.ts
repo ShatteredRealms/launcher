@@ -214,9 +214,6 @@ const installExtensions = async () => {
 };
 
 const createWindow = async () => {
-  if (isDebug) {
-    await installExtensions();
-  }
 
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
@@ -235,11 +232,17 @@ const createWindow = async () => {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
+      devTools: !(app.isPackaged || process.env?.NODE_ENV === 'test'),
+      nodeIntegration: true,
     },
     fullscreenable: false,
     resizable: false,
     frame: false,
   });
+
+  if (isDebug) {
+    await installExtensions();
+  }
 
   mainWindow.setTitle('Shattered Realms Online Launcher');
 
@@ -274,7 +277,6 @@ const createWindow = async () => {
   };
   webRequest.onBeforeRequest(filter, async ({ url }) => {
     const params = url.slice(url.indexOf('#'));
-    console.log('params:', params);
     mainWindow!.loadURL(`${resolveHtmlPath('index.html')}/${params}`);
   });
 

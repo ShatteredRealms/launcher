@@ -11,7 +11,8 @@ export type Channels =
   | 'download'
   | 'download-progress'
   | 'download-cancel'
-  | 'launch-client';
+  | 'launch-client'
+  | 'installed';
 
 const electronHandler = {
   ipcRenderer: {
