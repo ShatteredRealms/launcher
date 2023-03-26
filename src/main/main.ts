@@ -236,7 +236,7 @@ const createWindow = async () => {
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
       devTools: !(app.isPackaged || process.env?.NODE_ENV === 'test'),
-      nodeIntegration: false,
+      nodeIntegration: true,
     },
     fullscreenable: false,
     resizable: false,
