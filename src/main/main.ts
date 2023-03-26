@@ -15,17 +15,16 @@ import log from 'electron-log';
 import { Progress } from 'electron-dl';
 import { resolveHtmlPath } from './util';
 import DownloadItem = Electron.DownloadItem;
-
-const { download } = require('electron-dl');
+import { globalShortcut } from 'electron/main';
+import fs from 'fs';
+import AdmZip from 'adm-zip';
+import { download } from 'electron-dl';
+import { execFile } from 'child_process';
 
 const WindowsClientURL =
   'https://downloads.shatteredrealmsonline.com/client/WindowsClient.zip';
 const LatestVersionUrl =
   'https://downloads.shatteredrealmsonline.com/client/ClientVersion.txt';
-
-const AdmZip = require('adm-zip');
-const fs = require('fs');
-const child = require('child_process').execFile;
 
 class AppUpdater {
   constructor() {
@@ -60,23 +59,13 @@ ipcMain.on('navigate', async (_event, arg) => {
   mainWindow?.loadURL(resolveHtmlPath(`${arg}`));
 });
 
-ipcMain.on('accounts-api-url', async (event) => {
-  event.reply('accounts-api-url', process.env.ACCOUNTS_API);
-});
-
 ipcMain.on('game-status', async (event) => {
-  fs.access(`${gameDirectory}`, (err: never) => {
+  fs.access(`${gameDirectory}`, () => {
     download(mainWindow, LatestVersionUrl, {
       directory: gameDirectory,
 
       onCompleted: (file: File) => {
         latestVersionFile = file;
-        if (err) {
-          // Game isn't installed
-          event.reply('game-status', false);
-          return;
-        }
-
         // Game installed, check current version
         fs.readFile(
           clientVersionFilePath,
@@ -100,7 +89,12 @@ ipcMain.on('game-status', async (event) => {
                   return;
                 }
 
-                event.reply('game-status', currentVersion === latestVersion);
+                if (currentVersion === latestVersion) {
+                  event.reply('game-status', true);
+                  fs.unlink(file.path, () => { });
+                } else {
+                  event.reply('game-status', false);
+                }
               });
           }
         );
@@ -110,23 +104,34 @@ ipcMain.on('game-status', async (event) => {
         console.log('canceled checking version: ', JSON.stringify(item));
         event.reply('game-status', true);
       },
+    }).finally(() => {
+
     });
   });
 });
 
-ipcMain.on('launch-client', async () => {
-  child(`${gameDirectory}/SROClient.exe`, (err: never) => {
-    if (!err) {
-      app.quit();
-      return;
-    }
+ipcMain.on('launch-client', async (_, token) => {
+  const executable = `${gameDirectory}/WindowsClient/SROClient.exe`;
+  try {
+    fs.chmodSync(executable, '755');
+  } catch (err) {
+    console.log('err:', err);
+  }
 
-    console.log(err);
-  });
+  try {
+    const exec = execFile(executable, [`--sro-token=${token}`]);
+    exec.on('spawn', () => {
+      app.quit()
+    })
+  } catch (err) {
+    console.log('err:', err);
+  }
+
 });
 
 ipcMain.on('download', async (event) => {
   download(mainWindow, WindowsClientURL, {
+
     directory: gameDirectory,
 
     onStarted: (item: DownloadItem) => {
@@ -161,9 +166,7 @@ ipcMain.on('download', async (event) => {
       zip.extractAllToAsync(gameDirectory, true, true, () => {
         event.reply('installed', 'installation complete');
       });
-      if (fs.existsSync(file.path)) {
-        fs.unlink(file.path, () => { });
-      }
+      fs.unlink(file.path, () => { });
       if (latestVersionFile) {
         fs.rename(latestVersionFile.path, clientVersionFilePath, (err: any) => {
           if (err) {
@@ -232,9 +235,8 @@ const createWindow = async () => {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
-      // devTools: !(app.isPackaged || process.env?.NODE_ENV === 'test'),
+      devTools: !(app.isPackaged || process.env?.NODE_ENV === 'test'),
       nodeIntegration: false,
-      webSecurity: false,
     },
     fullscreenable: false,
     resizable: false,
@@ -270,23 +272,6 @@ const createWindow = async () => {
     return { action: 'deny' };
   });
 
-  const {
-    session: { webRequest },
-  } = mainWindow.webContents;
-  const filter = {
-    urls: ['http://localhost/keycloak-redirect*'],
-  };
-  webRequest.onBeforeRequest(filter, async ({ url }) => {
-    let params = url.slice(url.indexOf('#'));
-    if (!url.match('^.+#.+$')) {
-      params = "";
-      console.log('params reset');
-    }
-    console.log('params', params);
-    console.log('url', url);
-    mainWindow!.loadURL(`${resolveHtmlPath('index.html')}${params}`);
-  });
-
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
   new AppUpdater();
@@ -302,6 +287,18 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+app.on('browser-window-focus', function() {
+  globalShortcut.register("CommandOrControl+R", () => {
+    console.log("CommandOrControl+R is pressed: Shortcut Disabled");
+  });
+  globalShortcut.register("CommandOrControl+Shift+R", () => {
+    console.log("CommandOrControl+Shift+R is pressed: Shortcut Disabled");
+  });
+  globalShortcut.register("F5", () => {
+    console.log("F5 is pressed: Shortcut Disabled");
+  });
 });
 
 app
