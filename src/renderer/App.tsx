@@ -1,84 +1,41 @@
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
+import {
+  MemoryRouter as Router,
+  Routes,
+  Route, Navigate
+} from "react-router-dom";
 import './App.css';
-import DefaultTemplate from './templates/default';
-import Home from './pages/Home';
 import { Rings } from 'react-loader-spinner';
-import { keycloak } from 'services/keycloak';
-import { useEffect, useState } from 'react';
+import { useKeycloak } from '@react-keycloak/web';
+import Home from './pages/Home';
+import DefaultTemplate from './templates/default';
+import Login from './pages/Login';
+import ProtectedRoute from "./pages/utils";
 
 export default function App() {
-  const [loading, setLoading] = useState(true)
+  const { initialized } = useKeycloak();
 
-  useEffect(() => {
-    initializeKeycloak()
-  }, [])
-
-  const initializeKeycloak = () => {
-    keycloak
-      .init({
-        checkLoginIframe: false,
-        redirectUri: 'http://localhost/keycloak-redirect',
-      })
-      .then(
-        (authenticated) => {
-          console.log('init finished:', authenticated);
-          // eslint-disable-next-line promise/always-return
-          if (authenticated) {
-            setLoading(false);
-            return;
-          }
-
-          keycloak
-            .login()
-            .then(
-              // eslint-disable-next-line promise/always-return
-              (resp: any) => {
-                console.log('resp:', resp);
-                setLoading(false);
-              },
-              (error: any) => {
-                console.log('login failed:', error);
-              }
-            )
-            .catch((error: any) => {
-              console.log('login error:', error);
-            }).finally(() => {
-              console.log('finally');
-              if (authenticated) {
-                setLoading(false);
-              } else {
-                console.log('reinitializing')
-                initializeKeycloak()
-              }
-            });
-        },
-        (error) => {
-          console.log('init failed:', error);
-        }
-      )
-      .catch((error) => {
-        console.log('init error:', error);
-      });
-  }
-
-  if (loading) {
-    return <Rings
-      height="200"
-      width="200"
-      radius="6"
-      color='#93c5fe'
-      wrapperStyle={{}}
-      wrapperClass="w-full h-full bg-gray-900 place-content-center"
-      visible={true}
-      ariaLabel="rings-loading"
-    />
+  if (!initialized) {
+    return (
+      <Rings
+        height="200"
+        width="200"
+        radius="6"
+        color="#93c5fe"
+        wrapperStyle={{}}
+        wrapperClass="w-full h-full bg-gray-900 place-content-center"
+        visible
+        ariaLabel="rings-loading"
+      />
+    );
   }
 
   return (
     <DefaultTemplate>
       <Router>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/home" element={<ProtectedRoute outlet={<Home />} />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       </Router>
     </DefaultTemplate>

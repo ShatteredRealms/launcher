@@ -1,13 +1,29 @@
+import * as React from 'react';
+import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import keycloak from '../services/keycloak';
+
+const eventLogger = (event: unknown, error: unknown) => {
+  console.log('onKeycloakEvent', event, error);
+};
+
+const tokenLogger = (tokens: unknown) => {
+  console.log('onKeycloakTokens', tokens);
+};
 
 const container = document.getElementById('root')!;
 const root = createRoot(container);
-root.render(<App />);
-
-// // calling IPC exposed from preload script
-// window.electron.ipcRenderer.once('ipc-example', (arg) => {
-//   // eslint-disable-next-line no-console
-//   console.log(arg);
-// });
-// window.electron.ipcRenderer.sendMessage('ipc-example', ['ping']);
+root.render(
+    <ReactKeycloakProvider
+      authClient={keycloak}
+      onEvent={eventLogger}
+      onTokens={tokenLogger}
+      initOptions={{
+        checkLoginIframe: false,
+        onLoad: 'login-required',
+      }}
+    >
+      <App />
+    </ReactKeycloakProvider>
+);

@@ -233,7 +233,7 @@ const createWindow = async () => {
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
       // devTools: !(app.isPackaged || process.env?.NODE_ENV === 'test'),
-      nodeIntegration: true,
+      nodeIntegration: false,
       webSecurity: false,
     },
     fullscreenable: false,
@@ -280,8 +280,9 @@ const createWindow = async () => {
     let params = url.slice(url.indexOf('#'));
     if (!url.match('^.+#.+$')) {
       params = "";
+      console.log('params reset');
     }
-    console.log('params', params)
+    console.log('params', params);
     console.log('url', url);
     mainWindow!.loadURL(`${resolveHtmlPath('index.html')}${params}`);
   });

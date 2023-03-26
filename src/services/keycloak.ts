@@ -1,6 +1,6 @@
-import Keycloak from "keycloak-js";
+import Keycloak from 'keycloak-js';
 
-export const keycloak = new Keycloak({
+const keycloak = new Keycloak({
   url:
     process.env.NODE_ENV === 'production'
       ? 'https://sso.shatteredrealmsonline.com'
@@ -8,3 +8,5 @@ export const keycloak = new Keycloak({
   realm: 'default',
   clientId: 'sro-gameclient',
 });
+
+export default keycloak;

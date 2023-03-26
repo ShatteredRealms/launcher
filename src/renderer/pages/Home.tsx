@@ -2,7 +2,7 @@ import './Home.css';
 import { Fragment, useEffect, useState } from 'react';
 import { RiAccountCircleFill } from 'react-icons/ri';
 import { Menu, Transition } from '@headlessui/react';
-import { keycloak } from 'services/keycloak';
+import { useKeycloak } from '@react-keycloak/web';
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
@@ -15,6 +15,8 @@ export default function Home() {
   const [dlUnits, setDLUnits] = useState('KB/s');
   const [downloading, setDownloading] = useState(false);
   const [isInstalled, setIsInstalled] = useState(true);
+
+  const { keycloak } = useKeycloak();
 
   useEffect(() => {
     window.electron.ipcRenderer.sendMessage('game-status', []);
@@ -32,15 +34,9 @@ export default function Home() {
       setDownloading(false);
     });
 
-    window.electron.ipcRenderer.on('download-progress', (p: unknown) => {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+    window.electron.ipcRenderer.on('download-progress', (p: any) => {
       setProgress(Math.floor(p.percent * 100));
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       setDlSpeed(Math.round(p.speed * 10) / 10);
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       setDLUnits(p.units);
     });
   }, []);
