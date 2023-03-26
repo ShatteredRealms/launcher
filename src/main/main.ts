@@ -29,7 +29,7 @@ class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
     autoUpdater.logger = log;
-    autoUpdater.checkForUpdatesAndNotify();
+    autoUpdater.checkForUpdatesAndNotify()
   }
 }
 
@@ -271,8 +271,6 @@ const createWindow = async () => {
     return { action: 'deny' };
   });
 
-  // Remove this if your app does not use auto updates
-  // eslint-disable-next-line
   new AppUpdater();
 };
 
@@ -297,6 +295,12 @@ app.on('browser-window-focus', function() {
   });
   globalShortcut.register("F5", () => {
     console.log("F5 is pressed: Shortcut Disabled");
+  });
+  globalShortcut.register("CommandOrControl+Q", () => {
+    console.log("CommandOrControl+Q is pressed: Shortcut Disabled");
+  });
+  globalShortcut.register("CommandOrControl+W", () => {
+    console.log("CommandOrControl+W is pressed: Shortcut Disabled");
   });
 });
 
