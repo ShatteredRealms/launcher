@@ -232,8 +232,9 @@ const createWindow = async () => {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
-      devTools: !(app.isPackaged || process.env?.NODE_ENV === 'test'),
+      // devTools: !(app.isPackaged || process.env?.NODE_ENV === 'test'),
       nodeIntegration: true,
+      webSecurity: false,
     },
     fullscreenable: false,
     resizable: false,
@@ -276,8 +277,13 @@ const createWindow = async () => {
     urls: ['http://localhost/keycloak-redirect*'],
   };
   webRequest.onBeforeRequest(filter, async ({ url }) => {
-    const params = url.slice(url.indexOf('#'));
-    mainWindow!.loadURL(`${resolveHtmlPath('index.html')}/${params}`);
+    let params = url.slice(url.indexOf('#'));
+    if (!url.match('^.+#.+$')) {
+      params = "";
+    }
+    console.log('params', params)
+    console.log('url', url);
+    mainWindow!.loadURL(`${resolveHtmlPath('index.html')}${params}`);
   });
 
   // Remove this if your app does not use auto updates

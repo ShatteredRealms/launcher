@@ -6,8 +6,6 @@ import { Rings } from 'react-loader-spinner';
 import { keycloak } from 'services/keycloak';
 import { useEffect, useState } from 'react';
 
-
-
 export default function App() {
   const [loading, setLoading] = useState(true)
 
@@ -19,10 +17,11 @@ export default function App() {
     keycloak
       .init({
         checkLoginIframe: false,
-        redirectUri: 'http://localhost:1212/keycloak-redirect',
+        redirectUri: 'http://localhost/keycloak-redirect',
       })
       .then(
         (authenticated) => {
+          console.log('init finished:', authenticated);
           // eslint-disable-next-line promise/always-return
           if (authenticated) {
             setLoading(false);
@@ -43,6 +42,14 @@ export default function App() {
             )
             .catch((error: any) => {
               console.log('login error:', error);
+            }).finally(() => {
+              console.log('finally');
+              if (authenticated) {
+                setLoading(false);
+              } else {
+                console.log('reinitializing')
+                initializeKeycloak()
+              }
             });
         },
         (error) => {
