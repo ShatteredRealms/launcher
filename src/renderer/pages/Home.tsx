@@ -19,8 +19,6 @@ export default function Home() {
   const { keycloak } = useKeycloak();
 
   useEffect(() => {
-    window.electron.ipcRenderer.sendMessage('game-status', []);
-
     window.electron.ipcRenderer.on('installed', () => {
       setIsInstalled(true);
     });
@@ -39,7 +37,14 @@ export default function Home() {
       setDlSpeed(Math.round(p.speed * 10) / 10);
       setDLUnits(p.units);
     });
+
+    window.electron.ipcRenderer.sendMessage('game-status', []);
+
   }, []);
+
+  const onAccountManagement = () => {
+    keycloak.accountManagement();
+  }
 
   const onSignOut = () => {
     keycloak.logout();
@@ -95,7 +100,7 @@ export default function Home() {
                       active ? 'bg-gray-900 text-gray-100' : 'text-gray-400',
                       'block w-full px-4 py-2 text-sm'
                     )}
-                    onClick={keycloak.accountManagement}
+                    onClick={onAccountManagement}
                   >
                     Profile
                   </button>

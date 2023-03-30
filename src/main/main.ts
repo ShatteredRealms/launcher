@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, globalShortcut } from 'electron';
+import { app, BrowserWindow, shell, ipcMain, globalShortcut, webContents, protocol } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { Progress } from 'electron-dl';
@@ -19,6 +19,7 @@ import fs from 'fs';
 import AdmZip from 'adm-zip';
 import { download } from 'electron-dl';
 import { execFile } from 'child_process';
+import { authPrefix, escapeRegExp, fileProtocol } from './config';
 
 const WindowsClientURL =
   'https://downloads.shatteredrealmsonline.com/client/WindowsClient.zip';
@@ -48,14 +49,12 @@ const gameDirectory = `${baseDirectory}/game`;
 const clientVersionFilePath = `${gameDirectory}/version.txt`;
 let latestVersionFile: File | null;
 
-ipcMain.on('game-client-updates', async () => { });
+ipcMain.on('account-management', async (_event, args: any[]) => {
+  mainWindow?.loadURL();
+});
 
 ipcMain.on('minimize-window', async () => {
   mainWindow?.minimize();
-});
-
-ipcMain.on('navigate', async (_event, arg) => {
-  mainWindow?.loadURL(resolveHtmlPath(`${arg}`));
 });
 
 ipcMain.on('game-status', async (event) => {
@@ -234,8 +233,9 @@ const createWindow = async () => {
       preload: app.isPackaged
         ? path.join(__dirname, 'preload.js')
         : path.join(__dirname, '../../.erb/dll/preload.js'),
-      devTools: !(app.isPackaged || process.env?.NODE_ENV === 'test'),
+      // devTools: !(app.isPackaged || process.env?.NODE_ENV === 'test'),
       nodeIntegration: true,
+      webSecurity: false,
     },
     fullscreenable: false,
     resizable: false,
@@ -271,6 +271,47 @@ const createWindow = async () => {
     return { action: 'deny' };
   });
 
+  mainWindow.webContents.on('did-fail-load', () => {
+    console.log('load failed');
+    mainWindow!.loadURL(resolveHtmlPath('index.html'));
+  })
+
+  const { session: { webRequest } } = mainWindow.webContents;
+  const filter = {
+    urls: [
+      'http://localhost/keycloak-redirect*'
+    ]
+  };
+  webRequest.onBeforeRequest(filter, async (details, callback) => {
+    const index = details.url.indexOf('#');
+    let params = "";
+    if (index >= 0) {
+      params = details.url.slice(index);
+    }
+    console.log('index:', index);
+    console.log('params:', params);
+    // mainWindow!.loadURL(resolveHtmlPath('index.html') + params);
+    callback({
+      cancel: false,
+      redirectURL: resolveHtmlPath('index.html') + params,
+    })
+  });
+
+  // mainWindow.webContents.on('will-redirect', (_event, redirectUrl) => {
+  //   if (redirectUrl.match("^http:\/\/localhost\/keycloak-redirect.*$")) {
+  //     console.log('match');
+  //     const index = redirectUrl.indexOf('#');
+  //     let params = "";
+  //     if (index >= 0) {
+  //       params = redirectUrl.slice(index);
+  //     }
+  //     console.log('params:', params);
+  //
+  //   } else {
+  //     console.log('no match')
+  //   }
+  // });
+
   new AppUpdater();
 };
 
@@ -287,21 +328,21 @@ app.on('window-all-closed', () => {
 });
 
 app.on('browser-window-focus', function() {
-  globalShortcut.register("CommandOrControl+R", () => {
-    console.log("CommandOrControl+R is pressed: Shortcut Disabled");
-  });
-  globalShortcut.register("CommandOrControl+Shift+R", () => {
-    console.log("CommandOrControl+Shift+R is pressed: Shortcut Disabled");
-  });
-  globalShortcut.register("F5", () => {
-    console.log("F5 is pressed: Shortcut Disabled");
-  });
-  globalShortcut.register("CommandOrControl+Q", () => {
-    console.log("CommandOrControl+Q is pressed: Shortcut Disabled");
-  });
-  globalShortcut.register("CommandOrControl+W", () => {
-    console.log("CommandOrControl+W is pressed: Shortcut Disabled");
-  });
+  // globalShortcut.register("CommandOrControl+R", () => {
+  //   console.log("CommandOrControl+R is pressed: Shortcut Disabled");
+  // });
+  // globalShortcut.register("CommandOrControl+Shift+R", () => {
+  //   console.log("CommandOrControl+Shift+R is pressed: Shortcut Disabled");
+  // });
+  // globalShortcut.register("F5", () => {
+  //   console.log("F5 is pressed: Shortcut Disabled");
+  // });
+  // globalShortcut.register("CommandOrControl+Q", () => {
+  //   console.log("CommandOrControl+Q is pressed: Shortcut Disabled");
+  // });
+  // globalShortcut.register("CommandOrControl+W", () => {
+  //   console.log("CommandOrControl+W is pressed: Shortcut Disabled");
+  // });
 });
 
 app

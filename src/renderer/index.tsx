@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import { createRoot } from 'react-dom/client';
 import App from './App';
@@ -15,15 +14,17 @@ const tokenLogger = (tokens: unknown) => {
 const container = document.getElementById('root')!;
 const root = createRoot(container);
 root.render(
-    <ReactKeycloakProvider
-      authClient={keycloak}
-      onEvent={eventLogger}
-      onTokens={tokenLogger}
-      initOptions={{
-        checkLoginIframe: false,
-        onLoad: 'login-required',
-      }}
-    >
-      <App />
-    </ReactKeycloakProvider>
+  <ReactKeycloakProvider
+    authClient={keycloak}
+    onEvent={eventLogger}
+    onTokens={tokenLogger}
+    initOptions={{
+      checkLoginIframe: false,
+      redirectUri: "http://localhost/keycloak-redirect",
+      // redirectUri: "sro://auth.local",
+      onLoad: 'login-required',
+    }}
+  >
+    <App />
+  </ReactKeycloakProvider>
 );

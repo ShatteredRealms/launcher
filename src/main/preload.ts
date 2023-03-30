@@ -3,16 +3,14 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
 export type Channels =
-  | 'ipc-example'
-  | 'accounts-api-url'
   | 'minimize-window'
-  | 'navigate'
   | 'game-status'
   | 'download'
   | 'download-progress'
   | 'download-cancel'
   | 'launch-client'
-  | 'installed';
+  | 'installed'
+  | 'account-management';
 
 const electronHandler = {
   ipcRenderer: {
