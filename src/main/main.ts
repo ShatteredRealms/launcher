@@ -9,17 +9,17 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain, globalShortcut, webContents, protocol } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import { Progress } from 'electron-dl';
+import { File, Progress } from 'electron-dl';
 import { resolveHtmlPath } from './util';
 import DownloadItem = Electron.DownloadItem;
 import fs from 'fs';
 import AdmZip from 'adm-zip';
 import { download } from 'electron-dl';
 import { execFile } from 'child_process';
-import { authPrefix, escapeRegExp, fileProtocol } from './config';
+import * as http from 'http';
 
 const WindowsClientURL =
   'https://downloads.shatteredrealmsonline.com/client/WindowsClient.zip';
@@ -49,16 +49,14 @@ const gameDirectory = `${baseDirectory}/game`;
 const clientVersionFilePath = `${gameDirectory}/version.txt`;
 let latestVersionFile: File | null;
 
-ipcMain.on('account-management', async (_event, args: any[]) => {
-  mainWindow?.loadURL();
-});
-
 ipcMain.on('minimize-window', async () => {
   mainWindow?.minimize();
 });
 
 ipcMain.on('game-status', async (event) => {
   fs.access(`${gameDirectory}`, () => {
+    if (mainWindow === null) return;
+
     download(mainWindow, LatestVersionUrl, {
       directory: gameDirectory,
 
@@ -87,23 +85,15 @@ ipcMain.on('game-status', async (event) => {
                   return;
                 }
 
+                event.reply('game-status', currentVersion === latestVersion);
                 if (currentVersion === latestVersion) {
-                  event.reply('game-status', true);
                   fs.unlink(file.path, () => { });
-                } else {
-                  event.reply('game-status', false);
                 }
-              });
+              },
+            );
           }
         );
       },
-
-      onCancel: (item: DownloadItem) => {
-        console.log('canceled checking version: ', JSON.stringify(item));
-        event.reply('game-status', true);
-      },
-    }).finally(() => {
-
     });
   });
 });
@@ -128,6 +118,9 @@ ipcMain.on('launch-client', async (_, token) => {
 });
 
 ipcMain.on('download', async (event) => {
+  if (mainWindow === null)
+    return;
+
   download(mainWindow, WindowsClientURL, {
 
     directory: gameDirectory,
@@ -265,52 +258,42 @@ const createWindow = async () => {
     mainWindow = null;
   });
 
-  // Open urls in the user's browser
-  mainWindow.webContents.setWindowOpenHandler((edata) => {
-    shell.openExternal(edata.url);
-    return { action: 'deny' };
-  });
-
   mainWindow.webContents.on('did-fail-load', () => {
-    console.log('load failed');
-    mainWindow!.loadURL(resolveHtmlPath('index.html'));
+    // console.log('load failed');
+    // mainWindow!.loadURL(resolveHtmlPath('index.html'));
   })
 
-  const { session: { webRequest } } = mainWindow.webContents;
   const filter = {
     urls: [
       'http://localhost/keycloak-redirect*'
     ]
   };
-  webRequest.onBeforeRequest(filter, async (details, callback) => {
-    const index = details.url.indexOf('#');
-    let params = "";
-    if (index >= 0) {
-      params = details.url.slice(index);
+  mainWindow.webContents.session.webRequest.onBeforeRequest(filter, async (details, callback) => {
+    let params = details.url.slice(details.url.indexOf('#'));
+    if (params.length <= 1) {
+      params = "";
     }
-    console.log('index:', index);
-    console.log('params:', params);
-    // mainWindow!.loadURL(resolveHtmlPath('index.html') + params);
-    callback({
-      cancel: false,
-      redirectURL: resolveHtmlPath('index.html') + params,
-    })
+    console.log('params', params);
+    // setTimeout(() => {
+      mainWindow!.loadURL(resolveHtmlPath('index.html') + params);
+    // }, 1000)
+    callback({cancel: false});
   });
 
-  // mainWindow.webContents.on('will-redirect', (_event, redirectUrl) => {
-  //   if (redirectUrl.match("^http:\/\/localhost\/keycloak-redirect.*$")) {
-  //     console.log('match');
-  //     const index = redirectUrl.indexOf('#');
-  //     let params = "";
-  //     if (index >= 0) {
-  //       params = redirectUrl.slice(index);
-  //     }
-  //     console.log('params:', params);
-  //
-  //   } else {
-  //     console.log('no match')
-  //   }
-  // });
+  // Hack to fix keycloak-redirect being canceled.
+  mainWindow.webContents.session.webRequest.onErrorOccurred((details) => {
+    if (details.url.match("http://localhost/keycloak-redirect*") && details.error === "net::ERR_ABORTED") {
+      setTimeout(() => {
+        let params = details.url.slice(details.url.indexOf('#'));
+        if (params.length <= 1) {
+          params = "";
+        }
+        mainWindow!.loadURL(resolveHtmlPath('index.html') + params);
+      }, 100)
+    }
+
+
+  });
 
   new AppUpdater();
 };

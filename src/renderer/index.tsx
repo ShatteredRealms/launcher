@@ -4,11 +4,11 @@ import App from './App';
 import keycloak from '../services/keycloak';
 
 const eventLogger = (event: unknown, error: unknown) => {
-  console.log('onKeycloakEvent', event, error);
+  // console.log('onKeycloakEvent', event, error);
 };
 
 const tokenLogger = (tokens: unknown) => {
-  console.log('onKeycloakTokens', tokens);
+  // console.log('onKeycloakTokens', tokens);
 };
 
 const container = document.getElementById('root')!;
@@ -20,9 +20,8 @@ root.render(
     onTokens={tokenLogger}
     initOptions={{
       checkLoginIframe: false,
-      redirectUri: "http://localhost/keycloak-redirect",
-      // redirectUri: "sro://auth.local",
       onLoad: 'login-required',
+      redirectUri: 'http://localhost/keycloak-redirect',
     }}
   >
     <App />
