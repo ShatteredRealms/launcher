@@ -19,8 +19,7 @@ import fs from 'fs';
 import AdmZip from 'adm-zip';
 import { download } from 'electron-dl';
 import { execFile } from 'child_process';
-import * as http from 'http';
-import { globalShortcut } from 'electron/main';
+import { globalShortcut } from 'electron';
 
 const WindowsClientURL =
   'https://downloads.shatteredrealmsonline.com/client/WindowsClient.zip';
@@ -313,19 +312,19 @@ app.on('window-all-closed', () => {
 
 app.on('browser-window-focus', function() {
   globalShortcut.register("CommandOrControl+R", () => {
-    console.log("CommandOrControl+R is pressed: Shortcut Disabled");
+    // console.log("CommandOrControl+R is pressed: Shortcut Disabled");
   });
   globalShortcut.register("CommandOrControl+Shift+R", () => {
-    console.log("CommandOrControl+Shift+R is pressed: Shortcut Disabled");
+    // console.log("CommandOrControl+Shift+R is pressed: Shortcut Disabled");
   });
   globalShortcut.register("F5", () => {
-    console.log("F5 is pressed: Shortcut Disabled");
+    // console.log("F5 is pressed: Shortcut Disabled");
   });
   globalShortcut.register("CommandOrControl+Q", () => {
-    console.log("CommandOrControl+Q is pressed: Shortcut Disabled");
+    // console.log("CommandOrControl+Q is pressed: Shortcut Disabled");
   });
   globalShortcut.register("CommandOrControl+W", () => {
-    console.log("CommandOrControl+W is pressed: Shortcut Disabled");
+    // console.log("CommandOrControl+W is pressed: Shortcut Disabled");
   });
 });
 
