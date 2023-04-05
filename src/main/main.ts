@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { File, Progress } from 'electron-dl';
@@ -20,6 +20,7 @@ import AdmZip from 'adm-zip';
 import { download } from 'electron-dl';
 import { execFile } from 'child_process';
 import * as http from 'http';
+import { globalShortcut } from 'electron/main';
 
 const WindowsClientURL =
   'https://downloads.shatteredrealmsonline.com/client/WindowsClient.zip';
@@ -311,21 +312,21 @@ app.on('window-all-closed', () => {
 });
 
 app.on('browser-window-focus', function() {
-  // globalShortcut.register("CommandOrControl+R", () => {
-  //   console.log("CommandOrControl+R is pressed: Shortcut Disabled");
-  // });
-  // globalShortcut.register("CommandOrControl+Shift+R", () => {
-  //   console.log("CommandOrControl+Shift+R is pressed: Shortcut Disabled");
-  // });
-  // globalShortcut.register("F5", () => {
-  //   console.log("F5 is pressed: Shortcut Disabled");
-  // });
-  // globalShortcut.register("CommandOrControl+Q", () => {
-  //   console.log("CommandOrControl+Q is pressed: Shortcut Disabled");
-  // });
-  // globalShortcut.register("CommandOrControl+W", () => {
-  //   console.log("CommandOrControl+W is pressed: Shortcut Disabled");
-  // });
+  globalShortcut.register("CommandOrControl+R", () => {
+    console.log("CommandOrControl+R is pressed: Shortcut Disabled");
+  });
+  globalShortcut.register("CommandOrControl+Shift+R", () => {
+    console.log("CommandOrControl+Shift+R is pressed: Shortcut Disabled");
+  });
+  globalShortcut.register("F5", () => {
+    console.log("F5 is pressed: Shortcut Disabled");
+  });
+  globalShortcut.register("CommandOrControl+Q", () => {
+    console.log("CommandOrControl+Q is pressed: Shortcut Disabled");
+  });
+  globalShortcut.register("CommandOrControl+W", () => {
+    console.log("CommandOrControl+W is pressed: Shortcut Disabled");
+  });
 });
 
 app
