@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, globalShortcut } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { File, Progress } from 'electron-dl';
@@ -19,7 +19,6 @@ import fs from 'fs';
 import AdmZip from 'adm-zip';
 import { download } from 'electron-dl';
 import { execFile } from 'child_process';
-import { globalShortcut } from 'electron';
 
 const WindowsClientURL =
   'https://downloads.shatteredrealmsonline.com/client/WindowsClient.zip';
