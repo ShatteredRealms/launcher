@@ -106,7 +106,7 @@ ipcMain.on('launch-client', async (_, [token, refreshToken]) => {
   }
 
   try {
-    const exec = execFile(executable, ["--sro-token", `\\"${token}\\"`, "--sro-refresh-token", `\\"${refreshToken}\\"`]);
+    const exec = execFile(executable, ["--sro-token", token, "--sro-refresh-token", refreshToken]);
     exec.on('spawn', () => {
       app.quit()
     })
