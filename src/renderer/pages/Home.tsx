@@ -64,7 +64,7 @@ export default function Home() {
   };
 
   const onPlay = () => {
-    window.electron.ipcRenderer.sendMessage('launch-client', [keycloak.token]);
+    window.electron.ipcRenderer.sendMessage('launch-client', [keycloak.token, keycloak.refreshToken]);
   };
 
   return (

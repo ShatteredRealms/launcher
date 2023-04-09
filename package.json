@@ -168,7 +168,7 @@
     "webpack-merge": "^5.8.0"
   },
   "build": {
-    "productName": "ShatteredRealmsOnlineLauncher",
+    "productName": "Shattered Realms Online",
     "appId": "com.shatteredrealmsonline.Launcher",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",

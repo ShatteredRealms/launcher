@@ -97,7 +97,7 @@ ipcMain.on('game-status', async (event) => {
   });
 });
 
-ipcMain.on('launch-client', async (_, token) => {
+ipcMain.on('launch-client', async (_, [token, refreshToken]) => {
   const executable = `${gameDirectory}/WindowsClient/SROClient.exe`;
   try {
     fs.chmodSync(executable, '755');
@@ -106,7 +106,7 @@ ipcMain.on('launch-client', async (_, token) => {
   }
 
   try {
-    const exec = execFile(executable, [`--sro-token=${token}`]);
+    const exec = execFile(executable, ["--sro-token", `\\"${token}\\"`, "--sro-refresh-token", `\\"${refreshToken}\\"`]);
     exec.on('spawn', () => {
       app.quit()
     })
